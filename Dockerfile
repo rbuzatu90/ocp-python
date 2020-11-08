@@ -1,9 +1,6 @@
 # We are basing our builder image on openshift base-centos7 image
 FROM openshift/base-centos7
 
-# Inform users who's the maintainer of this builder image
-#MAINTAINER Maciej Szulik <maszulik@redhat.com>
-
 # Inform about software versions being used inside the builder
 ENV app=lol
 
