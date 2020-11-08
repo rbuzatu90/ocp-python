@@ -8,14 +8,7 @@ FROM openshift/base-centos7
 ENV app=lol
 
 # Set labels used in OpenShift to describe the builder images
-LABEL io.k8s.description="Platform for serving static HTML files" \
-      io.k8s.display-name="Lighttpd 1.4.35" \
-      io.openshift.expose-services="8080:http" \
-      io.openshift.tags="builder,html,lighttpd"
 
-
-# Update the repositories
-#RUN yum -y update
 
 # Install the required software, namely Lighttpd and
 #RUN yum install -y lighttpd && \
