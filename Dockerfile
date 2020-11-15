@@ -17,10 +17,6 @@ COPY ./myapp.py /opt/app-root/src/
 # Drop the root user and make the content of /opt/openshift owned by user 1001
 RUN chown -R 1001:1001 /opt/app-root
 RUN touch /opt/app-root/lol
-RUN yum install -y python-setuptools tcpdump iproute net-tools
-RUN easy_install pip
-RUN pip install gunicorn
-RUN pip install flask
 # Set the default user for the image, the user itself was created in the base image
 USER 1001
 
