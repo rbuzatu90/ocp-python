@@ -1,0 +1,82 @@
+ocp_rootfs: "https://mirror.openshift.com/pub/openshift-v4/x86_64/dependencies/rhcos/4.12/latest/rhcos-4.12.30-x86_64-live-rootfs.x86_64.img"
+ocp_initramfs: "https://mirror.openshift.com/pub/openshift-v4/x86_64/dependencies/rhcos/4.12/latest/rhcos-4.12.30-x86_64-live-initramfs.x86_64.img"
+ocp_install_kernel: "https://mirror.openshift.com/pub/openshift-v4/x86_64/dependencies/rhcos/4.12/latest/rhcos-4.12.30-x86_64-live-kernel-x86_64"
+ocp_client: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/4.12.35/openshift-client-linux-4.12.35.tar.gz"
+ocp_installer: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/4.12.35/openshift-install-linux-4.12.35.tar.gz"
+libvirt_storage: "/var/lib/libvirt/images"
+gateway: '10.1.0.1' # virt bridge
+ifname: "ens2"
+disk: "vda"
+dns1: "10.1.0.9" # helper
+netmask: "255.255.255.0"
+helper: "10.1.0.9"
+dhcp_start: "10.1.0.100"
+dhcp_end: "10.1.0.200"
+ocp_cluster_name: "ocp"
+ocp_domain_name: "mylab.test"
+ocp_api: "10.1.0.201"
+ocp_apps: "10.1.0.202"
+
+vm_list:
+#  - vm_name: "helper"
+#    ipaddr: "10.1.0.9"
+#    vm_ram_gb: 8
+#    vm_vcpus: 4
+#    disk_size_gb: 20
+#    disk_source: '/root/images/rhel-8.8-x86_64-kvm.qcow2'
+#    net: ['default', 'ctlplane']
+  - vm_name: "bootstrap"
+    ipaddr: "10.1.0.10"
+    vm_vcpus: 4
+    vm_ram_gb: 8
+    disk_size_gb: 120
+    role: bootstrap
+    net: ['ctlplane']
+  - vm_name: "master1"
+    ipaddr: "10.1.0.11"
+    vm_ram_gb: 16
+    vm_vcpus: 10
+    disk_size_gb: 120
+    role: master
+    net: ['ctlplane']
+  - vm_name: "master2"
+    ipaddr: "10.1.0.12"
+    vm_ram_gb: 16
+    vm_vcpus: 10
+    disk_size_gb: 120
+    role: master
+    net: ['ctlplane']
+  - vm_name: "master3"
+    ipaddr: "10.1.0.13"
+    vm_ram_gb: 16
+    vm_vcpus: 10
+    disk_size_gb: 120
+    role: master
+    net: ['ctlplane']
+  - vm_name: "worker1"
+    ipaddr: "10.1.0.21"
+    vm_ram_gb: 16
+    vm_vcpus: 10
+    disk_size_gb: 120
+    disk2_size_gb: 100
+    role: worker
+    ingress: true
+    net: ['ctlplane']
+  - vm_name: "worker2"
+    ipaddr: "10.1.0.22"
+    vm_ram_gb: 16
+    vm_vcpus: 10
+    disk_size_gb: 120
+    disk2_size_gb: 100
+    role: worker
+    ingress: true
+    net: ['ctlplane']
+  - vm_name: "worker3"
+    ipaddr: "10.1.0.23"
+    vm_ram_gb: 16
+    vm_vcpus: 10
+    disk_size_gb: 120
+    disk2_size_gb: 100
+    role: worker
+    ingress: true
+    net: ['ctlplane']

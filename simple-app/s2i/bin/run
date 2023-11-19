@@ -1,0 +1,2 @@
+#!/bin/bash -e
+exec gunicorn -b :1234 myapp:application

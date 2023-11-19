@@ -1,0 +1,165 @@
+---
+- name: Init helper
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vars.yml
+  tasks:
+          
+#    - name: Install packages
+#      package:
+#        name: "{{ item }}"
+#        state: present
+#      with_items:
+#        - dnsmasq
+#        - firewalld
+#        - httpd
+#        - haproxy
+#        - syslinux-tftpboot
+
+    - name: Add IP for second interface for API and APPS
+      community.general.nmcli:
+        type: ethernet
+        conn_name: 'eth1'
+        ip4: '{{ helper}}/24, {{ ocp_api }}/32, {{ ocp_apps }}/32'
+        state: present
+        autoconnect: true
+    
+    - name: Create /tftpboot/rhcos/ if it does not exist
+      file:
+        path: /tftpboot/rhcos/
+        state: directory
+        mode: '0755'
+    
+    - name: Create /tftpboot/pxelinux.cfg if it does not exist
+      file:
+        path: /tftpboot/pxelinux.cfg/
+        state: directory
+        mode: '0755'
+    
+    - name: Downloading OCP4 installer initramfs
+      get_url:
+        url: "{{ ocp_initramfs }}"
+        dest: /tftpboot/rhcos/initramfs.img
+        mode: 0555
+    
+    - name: Downloading OCP4 installer kernel
+      get_url:
+        url: "{{ ocp_install_kernel }}"
+        dest: /tftpboot/rhcos/kernel
+        mode: 0555
+    
+    - name: Downloading OCP4 root FS
+      get_url:
+        url: "{{ ocp_rootfs }}"
+        dest: /var/www/html/rootfs.img
+        mode: 0555
+    
+    - name: Downloading OCP4 Installer
+      get_url:
+        url: "{{ ocp_installer }}"
+        dest: /usr/local/src/openshift-install-linux.tar.gz
+
+    - name: Check if file exists
+      stat:
+        path: /usr/local/bin/openshift-install
+      register: file
+    
+    - name: Unarchiving OCP4 Installer
+      unarchive:
+        src: /usr/local/src/openshift-install-linux.tar.gz
+        dest: /usr/local/bin
+        remote_src: yes
+      when: not file.stat.exists 
+    
+    - name: Downloading OCP4 client
+      get_url:
+        url: "{{ ocp_client }}"
+        dest: /usr/local/src/openshift-client-linux.tar.gz
+
+    - name: Check if file exists
+      stat:
+        path: /usr/local/bin/oc
+      register: file
+    
+    - name: Unarchiving OCP4 client
+      unarchive:
+        src: /usr/local/src/openshift-client-linux.tar.gz
+        dest: /usr/local/bin
+        remote_src: yes
+      when: not file.stat.exists
+    
+    - name: Render haproxy.conf
+      template:
+        src: "./haproxy.j2"
+        dest: "/etc/haproxy/haproxy.cfg"
+      with_items: "{{ vm_list }}"
+    
+    - name: Render dnsmasq hosts
+      template:
+        src: "./dnsmasq.hosts.j2"
+        dest: "/etc/dnsmasq.hosts"
+    
+    - name: Render dnsmasq.conf
+      template:
+        src: "./dnsmasq.j2"
+        dest: "/etc/dnsmasq.d/dnsmasq.conf"
+
+    - name: Starting service
+      service:
+        name: firewalld
+        enabled: yes
+        state: started
+
+    - name: Add UDP ports to firewall
+      command: |
+        firewall-cmd --permanent --add-port={{ item }}/udp
+      with_items:
+        - '53'
+        - '67'
+        - '69'
+
+    - name: Add TCP ports to firewall
+      command: |
+        firewall-cmd --permanent --add-port={{ item }}/tcp
+      with_items:
+        - '80'
+        - '8080'
+        - '8404'
+        - '443'
+        - '53'
+        - '6443'
+        - '22623'
+
+    - name: Reload firewalld
+      command: |
+        firewall-cmd --reload
+
+    - name: Allow haproxy OCP ports
+      command:
+        semanage port -a -t http_port_t -p tcp {{ item }}
+      with_items:
+        - '80'
+        - '443'
+        - '8404'
+        - '6443'
+        - '22623'
+        - '8080'
+      register: output
+      failed_when: ('already defined' not in output.stderr or output.rc == 0) and output.rc != 0
+
+    - name: Set port 8080 for httpd
+      replace:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: '^Listen.*'
+        replace: 'Listen 8080'
+    
+    - name: Starting service
+      service:
+        name: "{{ item }}"
+        enabled: yes
+        state: started
+      with_items:
+        - dnsmasq
+        - httpd
+        - haproxy

@@ -1,0 +1,14 @@
+---
+- name: Deletes the VMs
+  vars:
+    ansible_python_interpreter: '/usr/bin/python3'
+  hosts: localhost
+  gather_facts: no
+  become: yes
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - name: Delete VM
+      include_tasks: ./task-vm-delete.yml
+      with_items: "{{ vm_list }}"

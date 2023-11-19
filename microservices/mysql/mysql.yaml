@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  selector:
+    app: mysql
+  type: ClusterIP
+  ports:
+    - port: 3306
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - image: library/mysql
+        name: mysql
+        securityContext:
+          privileged: true
+        env:
+          # Use secret in real usage
+        - name: MYSQL_ROOT_PASSWORD
+          value: password
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+        - name: mysql-initdb
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: mysql-initdb
+        configMap:
+          name: mysql-initdb-config
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: mysql-pv-claim
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-initdb-config
+data:
+  initdb.sql: |
+    CREATE USER 'auth_user'@'%' IDENTIFIED BY 'Aauth123';
+    CREATE DATABASE auth;
+    GRANT ALL PRIVILEGES ON auth.* TO 'auth_user'@'%';
+    USE auth;
+    CREATE TABLE user(
+      id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      email VARCHAR (255) NOT NULL,
+      password VARCHAR(255) NOT NULL
+    );
+    INSERT INTO user (email, password) VALUES ('georgio@email.com', 'Admin123');

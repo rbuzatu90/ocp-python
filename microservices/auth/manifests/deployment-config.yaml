@@ -1,0 +1,33 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  name: auth
+spec:
+  replicas: 1
+  selector:
+    app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+        - name: auth
+          image: image-registry.openshift-image-registry.svc:5000/remus/auth
+          envFrom:
+            - configMapRef:
+                name: auth-configmap
+            - secretRef:
+                name: auth-secret
+  triggers:
+  - type: ConfigChange
+  - imageChangeParams:
+      automatic: true
+      containerNames:
+      - auth
+      from:
+        kind: ImageStreamTag
+        name: auth:latest
+    type: ImageChange
+  strategy:
+    type: Rolling

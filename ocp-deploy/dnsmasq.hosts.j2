@@ -1,0 +1,8 @@
+{% for vm in vm_list %}
+{% if vm.role is defined %}
+{{ vm.ipaddr }} {{ vm.vm_name }}.{{ ocp_cluster_name }}.{{ ocp_domain_name }}
+{% endif %}
+{% endfor %}
+
+{{ ocp_api }} api.{{ ocp_cluster_name }}.{{ ocp_domain_name }}
+{{ ocp_api }} api-int.{{ ocp_cluster_name }}.{{ ocp_domain_name }}

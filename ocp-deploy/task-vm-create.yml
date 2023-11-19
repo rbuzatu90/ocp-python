@@ -1,0 +1,90 @@
+---
+- name: Get VMs list
+  community.libvirt.virt:
+    command: list_vms
+  register: existing_vms
+  changed_when: no
+
+- name: Create VM if not exists
+  block:
+#
+#  - name: Copy base image to libvirt directory
+#    copy:
+#      dest: "{{ libvirt_pool_dir }}/{{ vm_name }}.qcow2"
+#      src: "/tmp/{{ base_image_name }}"
+#      force: no
+#      remote_src: yes 
+#      mode: 0660
+#    register: copy_results
+#
+#  - name: Configure the image
+#    command: |
+#      virt-customize -a {{ libvirt_pool_dir }}/{{ vm_name }}.qcow2 \
+#      --hostname {{ vm_name }} \
+#      --root-password password:{{ vm_root_pass }} \
+#      --ssh-inject 'root:file:{{ ssh_key }}' \
+#      --uninstall cloud-init --selinux-relabel
+#    when: copy_results is changed
+
+  - name: Create blank VM disk file
+    command: |
+      qemu-img create -f qcow2 {{ libvirt_storage }}/{{ item.vm_name }}.qcow2 {{ item.disk_size_gb }}G
+    when: item.disk_source is not defined
+
+  - name: Create second blank VM disk file
+    command: |
+      qemu-img create -f qcow2 {{ libvirt_storage }}/disk2-{{ item.vm_name }}.qcow2 {{ item.disk2_size_gb }}G
+    when: item.disk2_size_gb is defined
+
+  - name: Copy source VM disk file
+    copy:
+      src: '{{ item.disk_source }}'
+      dest: "{{ libvirt_storage }}/{{ item.vm_name }}.qcow2"
+    when: item.disk_source is defined
+
+  - name: Expand VM disk file
+    command: |
+      qemu-img resize {{ libvirt_storage }}/{{ item.vm_name }}.qcow2 +{{ item.disk_size_gb }}G
+    when: item.disk_source is defined
+
+  - set_fact:
+      lastmac={{ item.ipaddr.split('.')[-1] }}
+
+  - name: Define vm
+    community.libvirt.virt:
+      command: define
+      xml: "{{ lookup('template', 'vm-template.xml.j2') }}"
+
+  when: "item.vm_name not in existing_vms.list_vms"
+
+- name: Ensure VM is started
+  community.libvirt.virt:
+    name: "{{ item.vm_name }}"
+    state: running
+  register: vm_start_results
+  until: "vm_start_results is success"
+  retries: 15
+  delay: 2
+
+- name: Get the XML of VM
+  community.libvirt.virt:
+    command: get_xml
+    name: "{{ item.vm_name }}"
+  register: vm_info
+
+- name: Get the MAC
+  community.general.xml:
+    xmlstring: "{{ vm_info.get_xml }}"
+    xpath: /domain/devices/interface/mac
+    content: attribute
+  register: mac
+
+- name: Set macaddr fact
+  set_fact:
+    macaddr: "{{ mac.matches[0].mac.address }}"
+
+- name: Render tftp files
+  template:
+    src: ./pxe-boot.j2
+    dest: "01-{{ macaddr | regex_replace (':', '-')}}"
+  when: item.role is defined

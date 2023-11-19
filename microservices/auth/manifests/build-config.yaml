@@ -1,0 +1,42 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: auth
+spec:
+  strategy:
+    sourceStrategy:
+      from:
+        kind: "ImageStreamTag"
+        name: "auth:latest"
+  output:
+    to:
+      kind: "ImageStreamTag"
+      name: "auth:latest"
+  source:
+    git: 
+      uri: "https://github.com/rbuzatu90/ocp-python.git"
+      ref: "master"
+    contextDir: "microservices/auth" 
+#    dockerfile: "FROM openshift/ruby-22-centos7\nUSER example" 
+  replicas: 1
+  selector:
+    app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+        - name: auth
+          image: image-registry.openshift-image-registry.svc:5000/remus/auth
+          envFrom:
+            - configMapRef:
+                name: auth-configmap
+            - secretRef:
+                name: auth-secret
+  triggers:
+  - generic:
+      secretReference:
+        name: webhook
+    type: generic
+

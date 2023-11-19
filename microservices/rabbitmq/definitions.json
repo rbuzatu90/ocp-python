@@ -1,0 +1,25 @@
+{
+    "users": [
+        {
+            "name": "guest",
+            "password": "guest",
+            "tags": ["administrator"]
+        }
+    ],
+    "permissions": [
+      {
+        "user": "guest",
+        "vhost": "/",
+        "configure": ".*",
+        "write": ".*",
+        "read": ".*"
+      }
+    ],
+    "vhosts":[
+        {"name":"/"}
+    ],
+    "queues":[
+        {"name":"video","vhost":"/","durable":true,"auto_delete":false,"arguments":{}},
+        {"name":"mp3","vhost":"/","durable":true,"auto_delete":false,"arguments":{}}
+    ]
+}

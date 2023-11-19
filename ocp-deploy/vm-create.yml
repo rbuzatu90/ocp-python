@@ -1,0 +1,22 @@
+---
+- name: Deploys VM based on cloud image
+  vars:
+    ansible_python_interpreter: '/usr/bin/python3'
+  hosts: localhost
+  gather_facts: no
+  become: yes
+  vars_files:
+    - vars.yml
+
+  tasks:
+#    - name: Ensure requirements in place
+#      package:
+#        name:
+#          - libguestfs-tools
+#          - python3-libvirt
+#        state: present
+#      become: yes
+
+    - name: Create each VM
+      include_tasks: ./task-vm-create.yml
+      with_items: "{{ vm_list }}"

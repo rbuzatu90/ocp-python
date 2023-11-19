@@ -1,0 +1,80 @@
+global
+  log         127.0.0.1 local2
+  pidfile     /var/run/haproxy.pid
+  maxconn     4000
+  daemon
+defaults
+  mode                    http
+  log                     global
+  option                  dontlognull
+  option http-server-close
+  option                  redispatch
+  retries                 3
+  timeout http-request    10s
+  timeout queue           1m
+  timeout connect         10s
+  timeout client          1m
+  timeout server          1m
+  timeout http-keep-alive 10s
+  timeout check           10s
+  maxconn                 3000
+
+frontend stats
+  mode http
+  bind *:8404
+  stats enable
+  stats uri /stats
+  stats refresh 10s
+  stats admin if LOCALHOST
+
+listen api-server-6443
+  bind *:6443
+  mode tcp
+  balance source
+{% for vm in vm_list %}
+{% if vm.role is defined %}
+{% if vm.role == "bootstrap" %}
+  server {{ vm.vm_name }} {{ vm.vm_name }}.{{ ocp_cluster_name }}.{{ ocp_domain_name}}:6443 check inter 1s backup
+{% elif vm.role == "master" %}
+  server {{ vm.vm_name }} {{ vm.vm_name }}.{{ ocp_cluster_name }}.{{ ocp_domain_name}}:6443 check inter 1s
+{% endif %}
+{% endif %}
+{% endfor %}
+
+listen machine-config-server-22623
+  bind *:22623
+  mode tcp
+  balance source
+{% for vm in vm_list %}
+{% if vm.role is defined %}
+{% if vm.role == "bootstrap" %}
+  server {{ vm.vm_name }} {{ vm.vm_name }}.{{ ocp_cluster_name }}.{{ ocp_domain_name}}:22623 check inter 1s backup
+{% elif vm.role == "master" %}
+  server {{ vm.vm_name }} {{ vm.vm_name }}.{{ ocp_cluster_name }}.{{ ocp_domain_name}}:22623 check inter 1s
+{% endif %}
+{% endif %}
+{% endfor %}
+
+listen ingress-router-443
+  bind *:443
+  mode tcp
+  balance source
+{% for vm in vm_list %}
+{% if vm.role is defined %}
+{% if vm.role == "worker" %}
+  server {{ vm.vm_name }} {{ vm.vm_name }}.{{ ocp_cluster_name }}.{{ ocp_domain_name}}:443 check inter 1s
+{% endif %}
+{% endif %}
+{% endfor %}
+
+listen ingress-router-80
+  bind *:80
+  mode tcp
+  balance source
+{% for vm in vm_list %}
+{% if vm.role is defined %}
+{% if vm.role == "worker" %}
+  server {{ vm.vm_name }} {{ vm.vm_name }}.{{ ocp_cluster_name }}.{{ ocp_domain_name}}:80 check inter 1s
+{% endif %}
+{% endif %}
+{% endfor %}

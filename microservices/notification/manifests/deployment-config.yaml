@@ -1,0 +1,34 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  name: notification
+spec:
+  replicas: 1
+  selector:
+    app: notification
+  template:
+    metadata:
+      labels:
+        app: notification
+    spec:
+      containers:
+        - name: notification
+          image: image-registry.openshift-image-registry.svc:5000/remus/notification
+          envFrom:
+            - configMapRef:
+                name: notification-configmap
+            - secretRef:
+                name: notification-secret
+  triggers:
+  - type: ConfigChange
+  - imageChangeParams:
+      automatic: true
+      containerNames:
+      - notification
+      from:
+        kind: ImageStreamTag
+        name: notification:latest
+    type: ImageChange  
+  strategy:
+    type: Rolling      
+

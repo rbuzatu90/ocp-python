@@ -1,0 +1,14 @@
+default menu.c32
+ prompt 0
+ timeout 80
+ ONTIMEOUT 1
+ menu title ######## PXE Boot Menu ########
+ label 1
+ menu label ^1) Install {{ item.role }} node
+ menu default
+ kernel rhcos/kernel
+ append initrd=rhcos/initramfs.img nomodeset rd.neednet=1 ip={{ item.ipaddr }}::{{ gateway }}:{{ netmask }}:{{ item.vm_name }}.{{ ocp_cluster_name }}.{{ ocp_domain_name }}:{{ ifname }}:none nameserver={{ dns1 }}  coreos.inst=yes coreos.inst.install_dev={{ disk }} coreos.live.rootfs_url=http://{{ helper }}:8080/rootfs.img coreos.inst.ignition_url=http://{{ helper }}:8080/{{ item.role }}.ign
+
+ label 2
+ menu label ^2) Local Disk Boot
+ localboot 0

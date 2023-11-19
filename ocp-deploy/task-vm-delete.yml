@@ -1,0 +1,30 @@
+---
+- name: Get VMs list
+  community.libvirt.virt:
+    command: list_vms
+  register: existing_vms
+  changed_when: no
+
+- name: Delete VM if exists
+  block:
+
+  - name: Ensure VM is off
+    community.libvirt.virt:
+      name: "{{ item.vm_name }}"
+      state: "destroyed"
+    register: vm_stop_results
+    until: "vm_stop_results is success"
+    retries: 15
+    delay: 2
+
+  - name: Unefine VM
+    community.libvirt.virt:
+      command: undefine
+      name: '{{ item.vm_name }}'
+
+  - name: Delete VM disk file
+    command: |
+      rm -f {{ libvirt_storage }}/{{ item.vm_name }}.qcow2
+
+  when: "item.vm_name in existing_vms.list_vms"
+
