@@ -15,7 +15,7 @@ spec:
   source:
     git: 
       uri: "https://github.com/rbuzatu90/ocp-python.git"
-      ref: "master"
+      ref: "main"
     contextDir: "microservices/auth" 
 #    dockerfile: "FROM openshift/ruby-22-centos7\nUSER example" 
   replicas: 1
