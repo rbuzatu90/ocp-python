@@ -6,8 +6,8 @@ spec:
   strategy:
     sourceStrategy:
       from:
-        kind: "ImageStreamTag"
-        name: "auth:latest"
+        kind: DockerImage
+        name: registry.redhat.io/ubi9/python-39:latest
   output:
     to:
       kind: "ImageStreamTag"
