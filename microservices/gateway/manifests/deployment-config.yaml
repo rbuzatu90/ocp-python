@@ -1,33 +1,33 @@
 apiVersion: apps.openshift.io/v1
 kind: DeploymentConfig
 metadata:
-  name: notification
+  name: gateway
 spec:
   replicas: 1
   selector:
-    app: notification
+    app: gateway
   template:
     metadata:
       labels:
-        app: notification
+        app: gateway
     spec:
       containers:
-        - name: notification
-          image: image-registry.openshift-image-registry.svc:5000/remus/notification
+        - name: gateway
+          image: image-registry.openshift-image-registry.svc:5000/remus/gateway
           envFrom:
             - configMapRef:
-                name: notification-configmap
+                name: gateway-configmap
             - secretRef:
-                name: notification-secret
+                name: gateway-secret
   triggers:
   - type: ConfigChange
   - imageChangeParams:
       automatic: true
       containerNames:
-      - notification
+      - gateway
       from:
         kind: ImageStreamTag
-        name: notification:latest
+        name: gateway:latest
     type: ImageChange
   strategy:
     type: Rolling

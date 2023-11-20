@@ -1,0 +1,42 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: notification
+spec:
+  strategy:
+    sourceStrategy:
+      from:
+        kind: DockerImage
+        name: registry.redhat.io/ubi9/python-39:latest
+  output:
+    to:
+      kind: "ImageStreamTag"
+      name: "notification:latest"
+  source:
+    git: 
+      uri: "https://github.com/rbuzatu90/ocp-python.git"
+      ref: "main"
+    contextDir: "microservices/notification" 
+#    dockerfile: "FROM openshift/ruby-22-centos7\nUSER example" 
+  replicas: 1
+  selector:
+    app: notification
+  template:
+    metadata:
+      labels:
+        app: notification
+    spec:
+      containers:
+        - name: notification
+          image: image-registry.openshift-image-registry.svc:5000/remus/notification
+          envFrom:
+            - configMapRef:
+                name: notification-configmap
+            - secretRef:
+                name: notification-secret
+  triggers:
+  - generic:
+      secretReference:
+        name: webhook
+    type: generic
+

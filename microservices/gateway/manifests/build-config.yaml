@@ -1,0 +1,42 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: gateway
+spec:
+  strategy:
+    sourceStrategy:
+      from:
+        kind: DockerImage
+        name: registry.redhat.io/ubi9/python-39:latest
+  output:
+    to:
+      kind: "ImageStreamTag"
+      name: "gateway:latest"
+  source:
+    git: 
+      uri: "https://github.com/rbuzatu90/ocp-python.git"
+      ref: "main"
+    contextDir: "microservices/gateway" 
+#    dockerfile: "FROM openshift/ruby-22-centos7\nUSER example" 
+  replicas: 1
+  selector:
+    app: gateway
+  template:
+    metadata:
+      labels:
+        app: gateway
+    spec:
+      containers:
+        - name: gateway
+          image: image-registry.openshift-image-registry.svc:5000/remus/gateway
+          envFrom:
+            - configMapRef:
+                name: gateway-configmap
+            - secretRef:
+                name: gateway-secret
+  triggers:
+  - generic:
+      secretReference:
+        name: webhook
+    type: generic
+
