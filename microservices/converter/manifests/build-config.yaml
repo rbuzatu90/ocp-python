@@ -1,9 +1,9 @@
 apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
-  name: notification
+  name: converter
   labels:
-    app: notification
+    app: converter
 spec:
   strategy:
     sourceStrategy:
@@ -13,29 +13,29 @@ spec:
   output:
     to:
       kind: "ImageStreamTag"
-      name: "notification:latest"
+      name: "converter:latest"
   source:
     git: 
       uri: "https://github.com/rbuzatu90/ocp-python.git"
       ref: "main"
-    contextDir: "microservices/notification" 
+    contextDir: "microservices/converter" 
 #    dockerfile: "FROM openshift/ruby-22-centos7\nUSER example" 
   replicas: 1
   selector:
-    app: notification
+    app: converter
   template:
     metadata:
       labels:
-        app: notification
+        app: converter
     spec:
       containers:
-        - name: notification
-          image: image-registry.openshift-image-registry.svc:5000/remus/notification
+        - name: converter
+          image: image-registry.openshift-image-registry.svc:5000/remus/converter
           envFrom:
             - configMapRef:
-                name: notification-configmap
+                name: converter-configmap
             - secretRef:
-                name: notification-secret
+                name: converter-secret
   triggers:
   - generic:
       secretReference:

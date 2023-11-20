@@ -4,7 +4,6 @@ import requests
 
 def notification(message):
     # try:
-    print("notification(message) 1")
     message = json.loads(message)
     mp3_fid = message["mp3_fid"]
     receiver_address = message["username"]

@@ -2,6 +2,8 @@ apiVersion: apps.openshift.io/v1
 kind: DeploymentConfig
 metadata:
   name: auth
+  labels:
+    app: auth
 spec:
   replicas: 1
   selector:

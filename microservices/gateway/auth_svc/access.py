@@ -2,7 +2,6 @@ import os, requests
 
 
 def login(request):
-    print('auth_svc/access.py')
     auth = request.authorization
     if not auth:
         return None, ("missing credentials from auth_svc/access.py", 401)

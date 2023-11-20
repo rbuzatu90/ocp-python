@@ -12,13 +12,11 @@ def main():
     fs_videos = gridfs.GridFS(db_videos)
     fs_mp3s = gridfs.GridFS(db_mp3s)
 
-    print("########################################################################### 1")
     # rabbitmq connection
     credentials = pika.PlainCredentials('guest', 'guest')
     parameters = pika.ConnectionParameters('rabbitmq', 5672, '/', credentials)
     connection = pika.BlockingConnection(parameters)
     channel = connection.channel()
-    print("########################################################################### 2")
     def callback(ch, method, properties, body):
         err = to_mp3.start(body, fs_videos, fs_mp3s, ch)
         if err:
@@ -29,12 +27,10 @@ def main():
     channel.basic_consume(
         queue=os.environ.get("VIDEO_QUEUE"), on_message_callback=callback
     )
-    print("########################################################################### 3")
 
     print("Waiting for messages. To exit press CTRL+C")
 
     channel.start_consuming()
-    print("########################################################################### 4")
 
 if __name__ == "__main__":
     try:

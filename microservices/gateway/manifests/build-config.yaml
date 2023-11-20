@@ -2,6 +2,8 @@ apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
   name: gateway
+  labels:
+    app: gateway
 spec:
   strategy:
     sourceStrategy:
