@@ -11,7 +11,7 @@ channel = connection.channel()
 message = {
     "video_fid": '6558f277fff850d756e33ccf',
     "mp3_fid": '6558f277fff850d756e33cc2',
-    "username": 'georgio@email.com',
+    "username": 'test@email.com',
 }
 
 

@@ -1,7 +1,9 @@
 import pika, json
+import time
 
 
 def upload(f, fs, channel, access):
+    time.sleep(1)
     try:
         fid = fs.put(f)
     except Exception as err:
@@ -23,8 +25,9 @@ def upload(f, fs, channel, access):
                 delivery_mode=pika.spec.PERSISTENT_DELIVERY_MODE
             ),
         )
-    except Exception as err:
-        print("upload execption", err)
-        new_err = "################$$$$$$$$$$$$$$$$$$$", str(err)
+    except (pika.exceptions.StreamLostError, pika.exceptions.AMQPHeartbeatTimeout):
+        print("exception StreamLostError")
         fs.delete(fid)
-        return new_err, 500
+        upload(f, fs, channel, access)
+    except (pika.exceptions.ChannelWrongStateError):
+        print("exception ChannelWrongStateError")

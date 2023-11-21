@@ -36,7 +36,7 @@ EOF'
 
 mp3(){
   gateway_url=$(oc get route gateway -o json | jq -r .spec.host)
-  token=$(curl -X POST http://$gateway_url/login -u georgio@email.com:Admin123)
+  token=$(curl -X POST http://$gateway_url/login -u test@email.com:Admin123)
   echo "Token is $token"
   curl -vX POST -F 'file=@/root/microservices/StarWars.mkv' -H "Authorization: Bearer $token" http://$gateway_url/upload
 }
