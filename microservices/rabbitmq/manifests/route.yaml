@@ -3,6 +3,8 @@ kind: Route
 metadata:
   name: rabbitmq
   namespace: remus
+  labels:
+    app: rabbitmq
 spec:
   host: rabbitmq-remus.apps.ocp.mylab.test
   port:

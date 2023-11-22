@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mongodb-test
+  labels:
+    app: mongodb
 spec:
   serviceName: mongodb-test
   replicas: 1
