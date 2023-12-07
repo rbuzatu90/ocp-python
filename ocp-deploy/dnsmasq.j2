@@ -8,6 +8,7 @@ dhcp-option=option:dns-server,{{ dns1 }}
 enable-tftp
 tftp-root=/tftpboot
 dhcp-boot=pxelinux.0
+server=1.1.1.1
 
 addn-hosts=/etc/dnsmasq.hosts
 address=/.apps.{{ ocp_cluster_name }}.{{ ocp_domain_name}}/{{ ocp_apps }}
