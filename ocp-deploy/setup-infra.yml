@@ -15,6 +15,7 @@
 #        - firewalld
 #        - httpd
 #        - haproxy
+#        - nfs-utils
 #        - syslinux-tftpboot
 
     - name: Add IP for second interface for API and APPS
@@ -24,6 +25,12 @@
         ip4: '{{ helper}}/24, {{ ocp_api }}/32, {{ ocp_apps }}/32'
         state: present
         autoconnect: true
+    
+    - name: Create /nfs if it does not exist
+      file:
+        path: /nfs
+        state: directory
+        mode: '0777'
     
     - name: Create /tftpboot/rhcos/ if it does not exist
       file:
@@ -105,6 +112,10 @@
         src: "./dnsmasq.j2"
         dest: "/etc/dnsmasq.d/dnsmasq.conf"
 
+    - name: NFS exports
+      command: |
+        echo '/nfs     *(rw,sync,no_wdelay,no_root_squash,insecure)' > /etc/exports
+
     - name: Starting service
       service:
         name: firewalld
@@ -126,10 +137,15 @@
         - '80'
         - '8080'
         - '8404'
+        - '2049'
         - '443'
         - '53'
         - '6443'
         - '22623'
+
+    - name: Selinux allow nfs share
+      command: |
+        semanage fcontext -a -t public_content_rw_t "/nfs(/.*)?"
 
     - name: Reload firewalld
       command: |
